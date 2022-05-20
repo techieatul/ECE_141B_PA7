@@ -159,6 +159,33 @@ bool SelectStatement::checkSelectTable(Tokenizer aTokenizer) {
     return true;
 }
 
+Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
+    aTokenizer.skipTo(Keywords::from_kw);
+    aTokenizer.next();
+    Block    theDescribeBlock;
+    Database* theDb = aProc->getDatabaseInUse();
+    uint32_t theBlockNum = theDb->getEntityFromMap(aTokenizer.current().data);
+    theDb->getStorage().readBlock(theBlockNum, theDescribeBlock);
+    Entity *theEntity;
+
+    if (theDescribeBlock.header.theTitle == aTokenizer.current().data) {
+        theEntity = new Entity(aTokenizer.current().data);
+        theEntity->decodeBlock(theDescribeBlock);
+    }
+    SelectStatement *theSelectStatememt = new SelectStatement(Keywords::select_kw, theEntity);
+    // Restart the token Index
+    aTokenizer.restart();
+    StatusResult theStatus = theSelectStatememt->parse(aTokenizer);
+    delete theEntity;
+    return theSelectStatememt;
+}
+
+
+StatusResult SelectStatement::parse(Tokenizer &aTokenizer){
+    parseStatement(aTokenizer);
+}
+
+
 } // namespace ECE141
 
 

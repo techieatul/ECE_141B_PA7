@@ -25,6 +25,30 @@ namespace ECE141 {
     return true;
 }
 
-    
+Statement* DeleteRowStatement::deleteRowStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
+    aTokenizer.skipTo(Keywords::from_kw);
+    aTokenizer.next(); // Table Name
+    std::string theTableName = aTokenizer.current().data;
+    Block    theDescribeBlock;
+    Database* theDb = aProc->getDatabaseInUse();
+    uint32_t theBlockNum = theDb->getEntityFromMap(theTableName);
+    if(theBlockNum==-1){
+        return nullptr;
+    }
+    theDb->getStorage().readBlock(theBlockNum, theDescribeBlock);
+    Entity *theEntity;
+    if (theDescribeBlock.header.theTitle == theTableName) {
+        theEntity = new Entity(theTableName);
+        theEntity->decodeBlock(theDescribeBlock);
+    }
+
+    DeleteRowStatement *theDeleteStmt = new DeleteRowStatement(Keywords::delete_kw,theEntity);
+    StatusResult theStatus = theDeleteStmt->parse(aTokenizer);
+    if(!theStatus){
+        return nullptr;
+    }
+    delete theEntity;
+    return theDeleteStmt;
+}
 
 }  // namespace ECE141

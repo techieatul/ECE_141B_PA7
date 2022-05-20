@@ -93,4 +93,29 @@ namespace ECE141 {
         return true;
     }
 
+    Statement* UpdateTableStatement::updateTableStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
+        Block theDescribeBlock;
+        std::string theTableName = aTokenizer.peek(1).data;
+        Database* theDb = aProc->getDatabaseInUse();
+        uint32_t theBlockNum = theDb->getEntityFromMap(theTableName);
+
+        if (theBlockNum == -1) {
+            return nullptr;
+        }
+        theDb->getStorage().readBlock(theBlockNum, theDescribeBlock);
+        Entity *theEntity;
+        if (theDescribeBlock.header.theTitle == theTableName) {
+            theEntity = new Entity(theTableName);
+            theEntity->decodeBlock(theDescribeBlock);
+        }
+        aTokenizer.restart();
+        UpdateTableStatement *theUpdateStmt = new UpdateTableStatement(Keywords::update_kw, theEntity);
+        StatusResult theStatus = theUpdateStmt->parse(aTokenizer);
+        if (!theStatus) {
+            return nullptr;
+        }
+        delete theEntity;
+        return theUpdateStmt;
+    }
+
 }  // namespace ECE141

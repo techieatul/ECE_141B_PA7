@@ -6,6 +6,9 @@
 #include "DBQuery.hpp"
 #include "SQLStatement.hpp"
 #include "Statement.hpp"
+#include "SQLProcessor.hpp"
+#include "BlockIO.hpp"
+#include "Entity.hpp"
 namespace ECE141 {
 
 struct selectField {
@@ -22,6 +25,8 @@ class SelectStatement : public SQLStatement {
     StatusResult parseSelect(Tokenizer &aTokenizer);
     StatusResult parseOperand(Tokenizer &aTokenizer, Operand &anOperand);
     static bool checkSelectTable(Tokenizer aTokenizer);
+    static Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer);
+    StatusResult parse(Tokenizer &aTokenizer);
 
    protected:
     Entity *entity;

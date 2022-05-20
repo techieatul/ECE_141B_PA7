@@ -5,24 +5,24 @@
 
 namespace ECE141 {
 
-bool InsertTableStatement::insertTableStatement(Tokenizer &aTokenizer) {
+StatusResult InsertTableStatement::parse(Tokenizer &aTokenizer) {
     if (2 < aTokenizer.remaining()) {  // now token: table name
         aTokenizer.next();
         StringList theFields;
         if (aTokenizer.skipIf('(')) {
             parseIdentifierList(theFields, aTokenizer);
-            if (0 == theFields.size()) return false;
+            if (0 == theFields.size()) return StatusResult{syntaxError};
         }
 
         if (aTokenizer.skipIf(Keywords::values_kw)) {
             if (!makeRowsFromValueLists(aTokenizer, theFields)) {
-                return false;
+                StatusResult{syntaxError};
             }
-            return true;
+            return StatusResult{};
         } else
-            return false;
+            StatusResult{syntaxError};
     }
-    return false;
+    return StatusResult{syntaxError};
 }
 
 bool InsertTableStatement::createRow(InsertTableStatement               &aStatement,
@@ -125,5 +125,29 @@ bool InsertTableStatement::checkInsertTable(Tokenizer aTokenizer) {
     return true;
 }
 // Function to check if tokenized tokens represent SELECT...;
+static Statement* insertTableStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
+     aTokenizer.skipTo(TokenType::identifier);
+     Block    theDescribeBlock;
+     Database* theCurrentActiveDb = aProc->getDatabaseInUse();
+     uint32_t theBlockNum = (theCurrentActiveDb)->getEntityFromMap(aTokenizer.current().data);
 
+     (theCurrentActiveDb)->getStorage().readBlock(theBlockNum, theDescribeBlock);
+     Entity *theEntity;
+
+     if (theDescribeBlock.header.theTitle == aTokenizer.current().data) {
+         theEntity = new Entity(aTokenizer.current().data);
+         theEntity->decodeBlock(theDescribeBlock);
+     }
+     InsertTableStatement *theInsertTable = new InsertTableStatement(aProc, Keywords::insert_kw, aProc->getTheRowData(), theEntity);
+
+     theInsertTable->setTableName(aTokenizer.current().data);
+     theInsertTable->parse(aTokenizer);
+     delete theEntity;
+     return theInsertTable;
+}
+StatusResult InsertTableStatement::run(std::ostream &aStream){
+    Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+    theDatabase->insertTable(this,aStream);
+
+};
 }  // namespace ECE141

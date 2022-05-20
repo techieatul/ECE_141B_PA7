@@ -126,7 +126,7 @@ StatusResult Database::closeDB(){
     return StatusResult(Errors::noError);
 }
 
-StatusResult Database::updateTable(SQLStatement *aSqlStmt,std::ostream &anOutput){
+StatusResult Database::updateTable(UpdateTableStatement *aSqlStmt,std::ostream &anOutput){
     DBQuery& theDBQuery = aSqlStmt->getDBQuery();
     Entity* theEntity = theDBQuery.getEntity();
     StringList theFieldsToUpdate;
@@ -149,7 +149,7 @@ StatusResult Database::updateTable(SQLStatement *aSqlStmt,std::ostream &anOutput
     return StatusResult(Errors::noError);
 
 }
-StatusResult Database::deleteRow(SQLStatement *aSqlStmt,std::ostream &anOutput){
+StatusResult Database::deleteRow(DeleteRowStatement *aSqlStmt,std::ostream &anOutput){
     DBQuery& theDBQuery = aSqlStmt->getDBQuery();
     Entity* theEntity = theDBQuery.getEntity();
     uint32_t theEntityHash = theEntity->getEntityHashString();
@@ -244,6 +244,197 @@ void Database::each(uint32_t &anEntityHash, RawRowCollection &theRows){
 
     return;
 
+}
+
+
+StatusResult Database::createTable(CreateTableStatement* aStmt,std::ostream &anOutput){
+    if (this == nullptr) {
+        return StatusResult(Errors::noDatabaseSpecified);
+    }
+    CreateTableStatement *theStatement = aStmt;
+    std::string theTableName = theStatement->getTableName();
+    Entity *theEntity = new Entity(theStatement->getTableName());
+    uint32_t theCurrentEntityId = this->getEntityId();
+    theEntity->setBlockId(theCurrentEntityId);
+    std::vector<Attribute> theAttr = theStatement->getAttributevector();
+
+    for (size_t i = 0; i < theAttr.size(); i++) {
+        theEntity->addAttribute(theAttr.at(i));
+    }
+
+    // creating the table
+    // Store the entity as a block
+    StatusResult theStatus;
+    // Checking if the table already exists
+    bool theEntityExists = this->checkEntityInMap(theEntity->getName());
+    if (theEntityExists) {
+        return StatusResult(Errors::tableExists);
+    }
+
+    // Check if duplicate attributes
+    bool theDuplicateAttrCheck = theEntity->checkDuplicateAttr();
+    if (theDuplicateAttrCheck) {
+        return StatusResult(Errors::attributeExists);
+    }
+
+    // This part of code handles the blockifying the entity
+    Block theConvertedBlock = theEntity->getBlock();
+
+    // For entity theBlockId is the entity number in the database
+    theConvertedBlock.header.theBlockId = this->getEntityId();
+    theConvertedBlock.header.theTableNameHash = Helpers::hashString(theEntity->getName().c_str());
+    theEntity->setEntityHashString(theConvertedBlock.header.theTableNameHash);
+    // For entity theEntityId is the current value of the auto_incr field
+
+    theConvertedBlock.header.theEntityId = theEntity->getAutoIncr();
+    bool theCheckIfQIsEmpty = this->freeBlockQEmpty();
+    uint32_t theBlockNum = this->getFreeBlock();
+    theConvertedBlock.header.theBlockNum = theBlockNum;
+    theEntity->setBlockNum(theBlockNum);
+    this->getStorage().writeBlock(theBlockNum, theConvertedBlock);
+
+    // Block count only incremented if no free block in between start to end of file
+    uint32_t theNewBlockCount = theCheckIfQIsEmpty ? theBlockNum + 1 : this->getBlockCount();
+
+    this->setBlockCount(theNewBlockCount);
+    this->setChange(true);
+    anOutput << "Query OK, 1 row affected";
+    anOutput << " (" << Config::getTimer().elapsed() << " sec)" << std::endl;
+    theStatus = StatusResult(Errors::noError);
+
+    if (theStatus) {
+        this->setEntityMap(theTableName, theBlockNum);
+        uint32_t theEntityId = this->getEntityId() + 1;
+        this->setEntityId(theEntityId);
+    }
+    delete theEntity;
+    return theStatus;
+}
+StatusResult Database::insertTable(InsertTableStatement* aStmt,std::ostream &anOutput){
+    
+    Entity  *theEntity = new Entity(aStmt->getTableName());
+    Block   *theDescribeBlock = new Block(BlockType::entity_block);
+    uint32_t theBlockNum = this->getEntityFromMap(aName);
+    bool theCheckIfQIsEmpty = (*currentActiveDbPtr)->freeBlockQEmpty();
+    uint32_t theBlockCount = (*currentActiveDbPtr)->getFreeBlock();
+    (*currentActiveDbPtr)->getStorage().readBlock(theBlockNum, *theDescribeBlock);
+    theEntity->decodeBlock(*theDescribeBlock);
+    const Attribute *theAttr = theEntity->getPrimaryKey();
+    std::string      thePrimaryKey = "";
+    if (theAttr != nullptr) {
+        thePrimaryKey = theAttr->getName();
+    }
+
+    delete theDescribeBlock;
+    for (size_t i = 0; i < this->theRowData.size(); i++) {
+        // blockify each row. The getBlock function in Row.cpp
+
+        Block   *theRowBlock = new Block(BlockType::data_block);
+        uint32_t theRowId = theEntity->getAutoIncr();
+
+        //////////////////////////////////////////
+        // Seeting the Autoincr id for primary Key
+
+        if (thePrimaryKey != "") {
+            Value thePrimaryValue = (int)theRowId;
+            theRowData.at(i).set(thePrimaryKey, thePrimaryValue);
+        }
+
+        ///////////////////////////////////////////
+        
+        theRowData.at(i).setBlockNumber(theRowId);
+        theRowData.at(i).tableName = aName;
+        theRowData.at(i).entityId = Helpers::hashString(aName.c_str());
+        theRowData.at(i).setStorageBlockNumber(theBlockCount);
+        this->theRowData.at(i).getBlock(*theRowBlock);
+        (*currentActiveDbPtr)->getStorage().writeBlock(theBlockCount, *theRowBlock);
+
+        theEntity->insertDataRow(theBlockCount);
+        theRowId++;
+        theEntity->setAutoIncr(theRowId);
+        // update blockCount
+        theBlockCount = theCheckIfQIsEmpty?++theBlockCount:(*currentActiveDbPtr)->getBlockCount();
+        (*currentActiveDbPtr)->setBlockCount(theBlockCount);
+    }
+    // Encode the entity block back
+    Block theEntityBlock = theEntity->getBlock();
+    (*currentActiveDbPtr)->getStorage().writeBlock(theBlockNum, theEntityBlock);
+
+    delete theEntity;
+    output << "Query Ok, " << this->theRowData.size() << " rows affected (" << Config::getTimer().elapsed() << " secs)" << std::endl;
+    return StatusResult(Errors::noError);
+}
+StatusResult Database::showTable(ShowTableStatement* aStmt,std::ostream &anOutput){
+    std::vector<std::string> theTableVector;
+    std::stringstream        ss;
+    ss << "Tables_in_" << this->getDbName();
+    theTableVector.push_back(ss.str());
+    // uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
+    for (auto const &imap : this->getIdxMap()) {
+        theTableVector.push_back(imap.first);
+    }
+    size_t theLongestString = 0;
+    for (size_t i = 0; i < theTableVector.size(); i++) {
+        theLongestString =
+            std::max(theLongestString, theTableVector.at(i).length());
+    }
+    MessageViewer* theMessageHandler = new MessageViewer();
+    theMessageHandler->showTableView(anOutput, theTableVector,
+                                                  theLongestString);
+
+    
+    anOutput << theTableVector.size() - 1 << " rows in set ("
+           << Config::getTimer().elapsed() << " sec.)"
+           << "\n";
+    
+    delete theMessageHandler;
+    return StatusResult(Errors::noError);
+}
+
+
+StatusResult Database::describeTable(DescribeTableStatement* aStmt,std::ostream &anOutput){
+    Block    theDescribeBlock;
+    std::string theTableName = aStmt->getTableName(); 
+    uint32_t theBlockNum = this->getEntityFromMap(theTableName);
+    this->getStorage().readBlock(theBlockNum, theDescribeBlock);
+
+    if (theDescribeBlock.header.theTitle == theTableName) {
+        // decode the block
+        Entity *theEntity = new Entity(theTableName);
+        theEntity->decodeBlock(theDescribeBlock);
+        MessageViewer* theMessageHandler = new MessageViewer();
+        theMessageHandler->printAttrTable(anOutput, theEntity->getAttributes());
+        anOutput << theEntity->getAttributes().size() << " rows in set ("
+               << Config::getTimer().elapsed() << " sec.)" << std::endl;
+        delete theEntity;
+        delete theMessageHandler;
+    }
+    return StatusResult(Errors::noError);
+}
+
+StatusResult Database::dropTable(DropTableStatement* aStmt,std::ostream &anOutput){
+    std::string theTableName = aStmt->getTableName();
+     if (!this->checkEntityInMap(theTableName)) {
+        return StatusResult(Errors::unknownTable);
+    }
+    uint32_t theBlockNum = this->getEntityFromMap(theTableName);
+    StatusResult theStatus = this->getStorage().freeBlocks(theBlockNum);
+    uint32_t theEntityHash = Helpers::hashString(theTableName.c_str());
+    RawRowCollection theRows;
+    this->each(theEntityHash,theRows);
+    for(auto &r:theRows){
+        uint32_t theRowBlockNum = r.getStorageBlockNumber();
+        theStatus = this->getStorage().freeBlocks(theRowBlockNum);
+    }
+    if (theStatus) {
+        this->setChange(true);
+        this->removeEntityFromMap(theTableName);
+        anOutput << "Query OK, "<< theRows.size()+1 << " rows affected (" << Config::getTimer().elapsed()
+               << " sec)"
+               << "\n";
+    }
+
+    return theStatus;
 }
 
 }  // namespace ECE141

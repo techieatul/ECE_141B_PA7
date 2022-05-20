@@ -67,6 +67,7 @@ class SQLProcessor : public CmdProcessor {
     Statement   *handleSqlStatements(Tokenizer &aTokenizer);
     Database*     getDatabaseInUse();
     void          setDatabaseInUse(Database* aDb);
+    RowVectors*   getTheRowData();
     void          releaseDatabase();
     bool          checkActiveDBName(const std::string &aDBName);
     static bool   dbExists(const std::string &aDBName);

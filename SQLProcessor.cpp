@@ -58,6 +58,10 @@ Database *SQLProcessor::getDatabaseInUse() {
     return *currentActiveDbPtr;
 }
 
+RowVectors* SQLProcessor::getTheRowData() {
+    return &theRowData;
+}
+
 // To dispact respectivve recognize function
 std::map<Keywords,recognizeVisitor> theRecognizemap{
     {Keywords::create_kw,CreateTableStatement::checkCreateTable},
@@ -70,11 +74,16 @@ std::map<Keywords,recognizeVisitor> theRecognizemap{
     {Keywords::delete_kw,DeleteRowStatement::checkDeleteRow},
 
   };
-
+  
+// Dispatcher to create statement based on keyword
 std::map<Keywords,SQLStmtFactory> theSQLStatementMap{
     {Keywords::create_kw,CreateTableStatement::createTableStatement},
     {Keywords::show_kw,ShowTableStatement::showTableStatement},
     {Keywords::describe_kw,DescribeTableStatement::describeTableStatement},
+    {Keywords::insert_kw,InsertTableStatement::insertTableStatement},
+    {Keywords::select_kw,SelectStatement::selectStatement},
+    {Keywords::update_kw,UpdateTableStatement::updateTableStatement},
+    {Keywords::delete_kw,DeleteRowStatement::deleteRowStatement},
 
 };
 
@@ -93,7 +102,7 @@ CmdProcessor *SQLProcessor::recognizes(Tokenizer &aTokenizer) {
 
 // To create Statement for CREATE TABLE
 Statement* SQLProcessor::createTableStatement(Tokenizer &aTokenizer){
-    CreateTableStatement *theCreateTable = new CreateTableStatement(Keywords::create_kw);
+    CreateTableStatement *theCreateTable = new CreateTableStatement(this,Keywords::create_kw);
     theCreateTable->createTableStatement(this,aTokenizer);
     return theCreateTable;
 
@@ -132,10 +141,10 @@ Statement* SQLProcessor::insertTableStatement(Tokenizer &aTokenizer){
          theEntity = new Entity(aTokenizer.current().data);
          theEntity->decodeBlock(theDescribeBlock);
      }
-     InsertTableStatement *theInsertTable = new InsertTableStatement(Keywords::insert_kw, &theRowData, theEntity);
+     InsertTableStatement *theInsertTable = new InsertTableStatement(this, Keywords::insert_kw, &theRowData, theEntity);
 
      theInsertTable->setTableName(aTokenizer.current().data);
-     theInsertTable->insertTableStatement(aTokenizer);
+     theInsertTable->parse(aTokenizer);
      delete theEntity;
      return theInsertTable;
 
@@ -218,9 +227,12 @@ Statement *SQLProcessor::makeStatement(Tokenizer    &aTokenizer,
                                        StatusResult &aResult) {
     // Atul: Added separate class to create statements for
     // create_table,show_table,drop_table, and describe_table
-    Statement *theSQLStatement = SQLProcessor::handleSqlStatements(aTokenizer);
+    Statement *theSQLStatement = nullptr;
+    if(theSQLStatementMap.find(aTokenizer.current().keyword) != theSQLStatementMap.end()){
+        theSQLStatement = theSQLStatementMap[aTokenizer.current().keyword](this,aTokenizer);
+    }
+    
     SQLProcessor::keywordStatement = Keywords::unknown_kw;  // resetting for the next command
-
     // Go to end of the command
     aTokenizer.skipTo(';');
     aTokenizer.next();

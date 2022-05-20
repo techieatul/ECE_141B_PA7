@@ -7,7 +7,7 @@
 namespace ECE141 {
 class CreateTableStatement : public SQLStatement {
    public:
-    CreateTableStatement(Keywords aStatementType = Keywords::unknown_kw) : SQLStatement::SQLStatement(aStatementType) {}
+    CreateTableStatement(SQLProcessor* aSQLProc,Keywords aStatementType = Keywords::unknown_kw) : SQLStatement::SQLStatement(aStatementType),theSQLProcessorPtr(aSQLProc) {}
     ~CreateTableStatement(){};
     // Function to check if tokenized tokens represent CREATE TABLE <TABLE_NAME>;
     static bool checkCreateTable(Tokenizer aTokenizer) {
@@ -46,7 +46,7 @@ class CreateTableStatement : public SQLStatement {
     }
 
     static Statement* createTableStatement(SQLProcessor* aProc, Tokenizer& aTokenizer){
-        CreateTableStatement *theCreateTable = new CreateTableStatement(Keywords::create_kw);
+        CreateTableStatement *theCreateTable = new CreateTableStatement(aProc,Keywords::create_kw);
         StatusResult theStatus = theCreateTable->parse(aTokenizer);
         if(theStatus){
             return theCreateTable;
@@ -55,6 +55,18 @@ class CreateTableStatement : public SQLStatement {
         return nullptr;
 
     }
+
+    StatusResult run(std::ostream &aStream){
+        SQLProcessor* theSQLProcessorPtr = getSQLProcessor();
+        Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+        theDatabase->createTable(this,aStream);
+
+    }
+
+    SQLProcessor* getSQLProcessor(){return theSQLProcessorPtr;}
+
+    protected:
+    SQLProcessor* theSQLProcessorPtr;
 
 
 

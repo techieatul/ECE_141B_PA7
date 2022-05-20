@@ -6,9 +6,15 @@
 #include "Attribute.hpp"
 namespace ECE141{
     class ShowTableStatement:public SQLStatement{
+        protected:
+        SQLProcessor* theSQLProcessorPtr;
         public:
-        ShowTableStatement(Keywords aStatementType=Keywords::unknown_kw):SQLStatement::SQLStatement(aStatementType){}
+        ShowTableStatement(SQLProcessor* aSQLProc,Keywords aStatementType=Keywords::unknown_kw):SQLStatement::SQLStatement(aStatementType),theSQLProcessorPtr(aSQLProc){}
         ~ShowTableStatement(){};
+
+        SQLProcessor* getSQLProcessor(){return theSQLProcessorPtr;}
+
+
         // Function to check if tokenized tokens represent SHOW TABLES;
         static bool checkShowTable(Tokenizer aTokenizer) {
             Token theShowToken{TokenType::keyword, Keywords::show_kw,
@@ -32,9 +38,15 @@ namespace ECE141{
         }
 
         static Statement* showTableStatement(SQLProcessor* aProc, Tokenizer &aTokenizer){
-            ShowTableStatement *theShowTable = new ShowTableStatement(Keywords::show_kw);
+            ShowTableStatement *theShowTable = new ShowTableStatement(aProc,Keywords::show_kw);
             return theShowTable;
 
+        }
+
+        StatusResult run(std::ostream &aStream){
+            SQLProcessor* theSQLProcessorPtr = getSQLProcessor();
+            Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+            theDatabase->showTable(this,aStream);
         }
     };
 

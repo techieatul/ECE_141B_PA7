@@ -18,6 +18,7 @@ class DeleteRowStatement : public SQLStatement {
 
     StatusResult parse(Tokenizer &aTokenizer) override;
     static bool checkDeleteRow(Tokenizer aTokenizer);
+    static Statement* deleteRowStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer);
     
    
    protected:

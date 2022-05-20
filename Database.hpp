@@ -19,6 +19,13 @@
 #include "DBQuery.hpp"
 #include "FilterRow.hpp"
 #include "SQLStatement.hpp"
+#include "CreateTableStatement.hpp"
+#include "ShowTableStatement.hpp"
+#include "UpdateTableStatement.hpp"
+#include "DeleteRowStatement.hpp"
+#include "InsertTableStatement.hpp"
+#include "DescribeTableStatement.hpp"
+#include "DropTableStatement.hpp"
 
 namespace ECE141 {
 
@@ -49,8 +56,13 @@ class Database {
     void filterRows(DBQuery &aDB,RawRowCollection &theRow,RawRowCollection &theOrderedRow);
     uint32_t getFreeBlock();
     bool     freeBlockQEmpty();
-    StatusResult updateTable(SQLStatement *aSqlStmt,std::ostream &anOutput);
-    StatusResult deleteRow(SQLStatement *aSqlStmt,std::ostream &anOutput);
+    StatusResult updateTable(UpdateTableStatement *aSqlStmt,std::ostream &anOutput);
+    StatusResult deleteRow(DeleteRowStatement *aSqlStmt,std::ostream &anOutput);
+    StatusResult createTable(CreateTableStatement* aStmt,std::ostream &anOutput);
+    StatusResult showTable(ShowTableStatement* aStmt,std::ostream &anOutput);
+    StatusResult describeTable(DescribeTableStatement* aStmt,std::ostream &anOutput);
+    StatusResult insertTable(InsertTableStatement* aStmt,std::ostream &anOutput);
+    StatusResult dropTable(DropTableStatement* aStmt,std::ostream &anOutput);
     
    protected:
     std::string name;
