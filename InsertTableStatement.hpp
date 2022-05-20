@@ -22,6 +22,7 @@ class InsertTableStatement : public SQLStatement {
                    std::map<std::string, std::string> &aKVList);
     bool makeRowsFromValueLists(Tokenizer  &aTokenizer,
                                 StringList &aFields);
+    static bool checkInsertTable(Tokenizer aTokenizer);
 
    protected:
     RowVectors *rows;

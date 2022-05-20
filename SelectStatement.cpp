@@ -110,6 +110,55 @@ StatusResult SelectStatement::parseSelect(Tokenizer &aTokenizer) {
     return StatusResult(Errors::noError);
 }
 
+// Function to check if tokenized tokens represent SELECT...;
+bool SelectStatement::checkSelectTable(Tokenizer aTokenizer) {
+    Token theSelectToken{TokenType::keyword, Keywords::select_kw,
+                         Operators::unknown_op, "select"};
+    Token theFromToken{TokenType::keyword, Keywords::from_kw,
+                       Operators::unknown_op, "from"};
+    Token theTableToken{TokenType::identifier, Keywords::unknown_kw,
+                        Operators::unknown_op, "table_name"};
+
+    std::vector<Token> SQLVector;
+    SQLVector.push_back(theSelectToken);
+    SQLVector.push_back(theFromToken);
+    SQLVector.push_back(theTableToken);
+    // It has to be atleast SELECT * FROM Table_name
+    if (aTokenizer.size() < 4) {
+        return false;
+    }
+    bool checkSelect = false;
+
+    for (size_t i = 0; i < SQLVector.size(); ++i) {
+        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
+            (SQLVector.at(i).type != aTokenizer.current().type)) {
+            return false;
+        }
+
+        if (!checkSelect && aTokenizer.peek(1).data == "*") {
+            checkSelect = true;
+            aTokenizer.next();
+        } else {
+            // check if we have like this identifier_kw,identifier_kw,identifier_kw
+            if (!checkSelect) {
+                while (!checkSelect && aTokenizer.more() && aTokenizer.peek(2).data != "from") {
+                    aTokenizer.next();
+                    if (aTokenizer.current().type != TokenType::identifier) {
+                        return false;
+                    }
+                    aTokenizer.skipTo(',');
+                }
+                checkSelect = true;
+                aTokenizer.next();
+            }
+        }
+
+        aTokenizer.next();
+    }
+
+    return true;
+}
+
 } // namespace ECE141
 
 

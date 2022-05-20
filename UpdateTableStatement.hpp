@@ -18,6 +18,7 @@ class UpdateTableStatement : public SQLStatement {
 
     StatusResult parse(Tokenizer &aTokenizer) override;
     StatusResult parseSet(Tokenizer &aTokenizer);
+    static bool checkUpdateTable(Tokenizer aTokenizer);
    
    protected:
     

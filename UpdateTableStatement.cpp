@@ -69,4 +69,28 @@ namespace ECE141 {
 
     }
 
+    bool UpdateTableStatement::checkUpdateTable(Tokenizer aTokenizer){
+        Token theUpdate = aTokenizer.current();
+        Token theTableName = aTokenizer.peek(1);
+        Token theSetToken = aTokenizer.peek(2);
+        if (theUpdate.keyword != Keywords::update_kw || theTableName.type != TokenType::identifier || theSetToken.keyword != Keywords::set_kw) {
+            return false;
+        }
+        aTokenizer.next(3);
+        // Now check if we have identifier = data,identifier = data ....
+        while (aTokenizer.current().type != TokenType::punctuation && aTokenizer.current().keyword != Keywords::where_kw) {
+            Token theIdentifier = aTokenizer.current();
+            Token theEqualOpr = aTokenizer.peek(1);
+            Token theData = aTokenizer.peek(2);
+            if (theIdentifier.type != TokenType::identifier || theEqualOpr.data != "=" || (theData.type != TokenType::number && theData.type != TokenType::string && theData.type != TokenType::timedate)) {
+                return false;
+            }
+            aTokenizer.next(3);
+            if (aTokenizer.current().data == ",") {
+                aTokenizer.next();
+            }
+        }
+        return true;
+    }
+
 }  // namespace ECE141

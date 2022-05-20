@@ -65,6 +65,11 @@ class SQLProcessor : public CmdProcessor {
     StatusResult updateTable(SQLStatement *aSqlStmt);
     StatusResult deleteRow(SQLStatement *aSqlStmt);
     Statement   *handleSqlStatements(Tokenizer &aTokenizer);
+    Database*     getDatabaseInUse();
+    void          setDatabaseInUse(Database* aDb);
+    void          releaseDatabase();
+    bool          checkActiveDBName(const std::string &aDBName);
+    static bool   dbExists(const std::string &aDBName);
 
    protected:
     Database    **currentActiveDbPtr;

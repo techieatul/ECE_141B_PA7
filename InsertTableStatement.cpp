@@ -82,4 +82,48 @@ bool InsertTableStatement::makeRowsFromValueLists(Tokenizer  &aTokenizer,
     return true;
 }
 
+bool InsertTableStatement::checkInsertTable(Tokenizer aTokenizer) {
+    Token theInsertToken{TokenType::keyword, Keywords::insert_kw,
+                         Operators::unknown_op, "insert"};
+    Token theIntoToken{TokenType::keyword, Keywords::into_kw,
+                       Operators::unknown_op, "into"};
+    Token theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
+                            Operators::unknown_op, "table_name"};
+    Token theOpenParanToken{TokenType::punctuation, Keywords::unknown_kw,
+                            Operators::unknown_op, "("};
+    Token theValuesToken{TokenType::keyword, Keywords::values_kw,
+                         Operators::unknown_op, "values"};
+
+    std::vector<Token> SQLVector;
+    SQLVector.push_back(theInsertToken);
+    SQLVector.push_back(theIntoToken);
+    SQLVector.push_back(theTableNameToken);
+    SQLVector.push_back(theOpenParanToken);
+
+    for (size_t i = 0; i < SQLVector.size(); ++i) {
+        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
+            (SQLVector.at(i).type != aTokenizer.current().type)) {
+            return false;
+        }
+        aTokenizer.next();
+    }
+    // jump to value keyword
+    if (!aTokenizer.skipTo(Keywords::values_kw)) {
+        return false;
+    }
+    // ckeck ')' vlaues '('
+    if ((aTokenizer.peek(-1).data != ")") || aTokenizer.peek(1).data != "(") {
+        return false;
+    }
+    aTokenizer.skipTo(';');
+
+    if (aTokenizer.tokenAt(aTokenizer.getIndex() - 1).data[0] != ')' ||
+        aTokenizer.current().data[0] != ';') {
+        return false;
+    }
+
+    return true;
+}
+// Function to check if tokenized tokens represent SELECT...;
+
 }  // namespace ECE141

@@ -21,6 +21,7 @@ class SelectStatement : public SQLStatement {
     StatusResult parseStatement(Tokenizer &aTokenizer);
     StatusResult parseSelect(Tokenizer &aTokenizer);
     StatusResult parseOperand(Tokenizer &aTokenizer, Operand &anOperand);
+    static bool checkSelectTable(Tokenizer aTokenizer);
 
    protected:
     Entity *entity;

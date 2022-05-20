@@ -20,6 +20,9 @@
 #include "Tokenizer.hpp"
 namespace ECE141 {
 
+using SQLStmtFactory = Statement *(*)(SQLProcessor *aProc,
+                                   Tokenizer   &aTokenizer);
+
 SQLProcessor::SQLProcessor(std::ostream &anOutput,
                            Database    **aCurrentActiveDbPtr)
     : CmdProcessor(anOutput), currentActiveDbPtr(aCurrentActiveDbPtr) {}
@@ -27,256 +30,53 @@ SQLProcessor::SQLProcessor(std::ostream &anOutput,
 SQLProcessor::~SQLProcessor() {}
 
 
-// Function to check if tokenized tokens represent CREATE TABLE <TABLE_NAME>;
-bool checkCreateTable(Tokenizer aTokenizer) {
-    // size_t theCurrIdx = aTokenizer.getIndex();
-    Token              theCreateToken{TokenType::keyword, Keywords::create_kw,
-                         Operators::unknown_op, "create"};
-    Token              theTableToken{TokenType::keyword, Keywords::table_kw,
-                        Operators::unknown_op, "table"};
-    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
-                            Operators::unknown_op, "table_name"};
-    Token              theOpenParanToken{TokenType::punctuation, Keywords::unknown_kw,
-                            Operators::unknown_op, "("};
-
-    std::vector<Token> SQLVector;
-    SQLVector.push_back(theCreateToken);
-    SQLVector.push_back(theTableToken);
-    SQLVector.push_back(theTableNameToken);
-    SQLVector.push_back(theOpenParanToken);
-
-    for (size_t i = 0; i < SQLVector.size(); ++i) {
-        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
-            (SQLVector.at(i).type != aTokenizer.current().type)) {
-            return false;
-        }
-        aTokenizer.next();
-    }
-
-    // check if we have ) and ;
-    aTokenizer.skipTo(';');
-
-    if (aTokenizer.tokenAt(aTokenizer.getIndex() - 1).data[0] != ')' ||
-        aTokenizer.current().data[0] != ';') {
-        return false;
-    }
-
-    return true;
-}
-// Function to check if tokenized tokens represent SHOW TABLES;
-bool checkShowTable(Tokenizer aTokenizer) {
-    Token              theShowToken{TokenType::keyword, Keywords::show_kw,
-                       Operators::unknown_op, "show"};
-    Token              theTablesToken{TokenType::keyword, Keywords::tables_kw,
-                         Operators::unknown_op, "tables"};
-
-    std::vector<Token> SQLVector;
-    SQLVector.push_back(theShowToken);
-    SQLVector.push_back(theTablesToken);
-
-    for (size_t i = 0; i < SQLVector.size(); ++i) {
-        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
-            (SQLVector.at(i).type != aTokenizer.current().type)) {
-            return false;
-        }
-        aTokenizer.next();
-    }
-
-    return true;
-}
-// Function to check if tokenized tokens represent DROP TABLE <TABLE_NAME>;
-bool checkDropTable(Tokenizer aTokenizer) {
-    Token              theDropToken{TokenType::keyword, Keywords::drop_kw,
-                       Operators::unknown_op, "drop"};
-    Token              theTableToken{TokenType::keyword, Keywords::table_kw,
-                        Operators::unknown_op, "table"};
-    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
-                            Operators::unknown_op, "table_name"};
-    Token              theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
-                            Operators::unknown_op, ";"};
-
-    std::vector<Token> SQLVector;
-    SQLVector.push_back(theDropToken);
-    SQLVector.push_back(theTableToken);
-    SQLVector.push_back(theTableNameToken);
-    SQLVector.push_back(theSemiColonToken);
-
-    for (size_t i = 0; i < SQLVector.size(); ++i) {
-        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
-            (SQLVector.at(i).type != aTokenizer.current().type)) {
-            return false;
-        }
-        aTokenizer.next();
-    }
-
-    return true;
+void SQLProcessor::setDatabaseInUse(Database *database){
+    (*currentActiveDbPtr) = database;
 }
 
-// Function to check if tokenized tokens represent DESCRIBE <TABLE_NAME>;
-bool checkDescribeTable(Tokenizer aTokenizer) {
-    Token              theDescribeToken{TokenType::keyword, Keywords::describe_kw,
-                           Operators::unknown_op, "describe"};
-    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
-                            Operators::unknown_op, "table_name"};
-    Token              theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
-                            Operators::unknown_op, ";"};
-
-    std::vector<Token> SQLVector;
-    SQLVector.push_back(theDescribeToken);
-    SQLVector.push_back(theTableNameToken);
-    SQLVector.push_back(theSemiColonToken);
-
-    for (size_t i = 0; i < SQLVector.size(); ++i) {
-        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
-            (SQLVector.at(i).type != aTokenizer.current().type)) {
-            return false;
-        }
-        aTokenizer.next();
-    }
-
-    return true;
+// To remove a database connection
+void SQLProcessor::releaseDatabase(){
+    delete (*currentActiveDbPtr);
 }
-// Function to check if tokenized tokens represent INSERT INTO <TABLE_NAME>;
-bool checkInsertTable(Tokenizer aTokenizer) {
-    Token              theInsertToken{TokenType::keyword, Keywords::insert_kw,
-                         Operators::unknown_op, "insert"};
-    Token              theIntoToken{TokenType::keyword, Keywords::into_kw,
-                       Operators::unknown_op, "into"};
-    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
-                            Operators::unknown_op, "table_name"};
-    Token              theOpenParanToken{TokenType::punctuation, Keywords::unknown_kw,
-                            Operators::unknown_op, "("};
-    Token              theValuesToken{TokenType::keyword, Keywords::values_kw,
-                         Operators::unknown_op, "values"};
-
-    std::vector<Token> SQLVector;
-    SQLVector.push_back(theInsertToken);
-    SQLVector.push_back(theIntoToken);
-    SQLVector.push_back(theTableNameToken);
-    SQLVector.push_back(theOpenParanToken);
-
-    for (size_t i = 0; i < SQLVector.size(); ++i) {
-        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
-            (SQLVector.at(i).type != aTokenizer.current().type)) {
-            return false;
-        }
-        aTokenizer.next();
-    }
-    // jump to value keyword
-    if (!aTokenizer.skipTo(Keywords::values_kw)) {
-        return false;
-    }
-    // ckeck ')' vlaues '('
-    if ((aTokenizer.peek(-1).data != ")") || aTokenizer.peek(1).data != "(") {
-        return false;
-    }
-    aTokenizer.skipTo(';');
-
-    if (aTokenizer.tokenAt(aTokenizer.getIndex() - 1).data[0] != ')' ||
-        aTokenizer.current().data[0] != ';') {
-        return false;
-    }
-
-    return true;
-}
-// Function to check if tokenized tokens represent SELECT...;
-bool checkSelectTable(Tokenizer aTokenizer) {
-    Token              theSelectToken{TokenType::keyword, Keywords::select_kw,
-                         Operators::unknown_op, "select"};
-    Token              theFromToken{TokenType::keyword, Keywords::from_kw,
-                       Operators::unknown_op, "from"};
-    Token              theTableToken{TokenType::identifier, Keywords::unknown_kw,
-                        Operators::unknown_op, "table_name"};
-
-    std::vector<Token> SQLVector;
-    SQLVector.push_back(theSelectToken);
-    SQLVector.push_back(theFromToken);
-    SQLVector.push_back(theTableToken);
-    // It has to be atleast SELECT * FROM Table_name
-    if (aTokenizer.size() < 4) {
-        return false;
-    }
-    bool checkSelect = false;
-
-    for (size_t i = 0; i < SQLVector.size(); ++i) {
-        if ((SQLVector.at(i).keyword != aTokenizer.current().keyword) ||
-            (SQLVector.at(i).type != aTokenizer.current().type)) {
-            return false;
-        }
-
-        if (!checkSelect && aTokenizer.peek(1).data == "*") {
-            checkSelect = true;
-            aTokenizer.next();
-        } else {
-            // check if we have like this identifier_kw,identifier_kw,identifier_kw
-            if (!checkSelect) {
-                while (!checkSelect && aTokenizer.more() && aTokenizer.peek(2).data != "from") {
-                    aTokenizer.next();
-                    if (aTokenizer.current().type != TokenType::identifier) {
-                        return false;
-                    }
-                    aTokenizer.skipTo(',');
-                }
-                checkSelect = true;
-                aTokenizer.next();
-            }
-        }
-
-        aTokenizer.next();
-    }
-
-    return true;
+// Check if DB exists
+bool SQLProcessor::dbExists(const std::string &aDBName) {
+    // Atul added
+    std::string theDBPath = Config::getDBPath(aDBName);
+    return std::filesystem::exists(theDBPath);
 }
 
-bool checkUpdateTable(Tokenizer aTokenizer){
-    Token theUpdate = aTokenizer.current();
-    Token theTableName = aTokenizer.peek(1);
-    Token theSetToken = aTokenizer.peek(2);
-    if(theUpdate.keyword!=Keywords::update_kw || theTableName.type!=TokenType::identifier || theSetToken.keyword!=Keywords::set_kw){
-        return false;
+// Check if the current active DB matches aDBName
+bool SQLProcessor::checkActiveDBName(const std::string &aDBName) {
+    if ((*currentActiveDbPtr) != nullptr && (*currentActiveDbPtr)->getDbName() == aDBName) {
+            return true;
     }
-    aTokenizer.next(3);
-    // Now check if we have identifier = data,identifier = data ....
-    while(aTokenizer.current().type!=TokenType::punctuation && aTokenizer.current().keyword!=Keywords::where_kw){
-        Token theIdentifier = aTokenizer.current();
-        Token theEqualOpr = aTokenizer.peek(1);
-        Token theData = aTokenizer.peek(2);
-        if(theIdentifier.type!=TokenType::identifier || theEqualOpr.data!="=" || (theData.type!=TokenType::number && theData.type!=TokenType::string && theData.type!=TokenType::timedate)){
-            return false;
-        }
-        aTokenizer.next(3);
-        if(aTokenizer.current().data == ","){
-            aTokenizer.next();
-        }
-    }
-    return true;
-
+    return false;
 }
-bool checkDeleteRow(Tokenizer aTokenizer){
-    // DELETE FROM Users WHERE
-    Token theUpdate = aTokenizer.current();
-    Token theFrom = aTokenizer.peek(1);
-    Token theTableName = aTokenizer.peek(2);
-    Token theWhere = aTokenizer.peek(3);
-    if(theUpdate.keyword!=Keywords::delete_kw || theFrom.keyword!=Keywords::from_kw || theTableName.type!=TokenType::identifier || theWhere.keyword!=Keywords::where_kw){
-        return false;
-    }
-    return true;
 
+// To return current active Database pointer
+Database *SQLProcessor::getDatabaseInUse() {
+    return *currentActiveDbPtr;
 }
 
 // To dispact respectivve recognize function
 std::map<Keywords,recognizeVisitor> theRecognizemap{
-    {Keywords::create_kw,checkCreateTable},
-    {Keywords::show_kw,checkShowTable},
-    {Keywords::describe_kw,checkDescribeTable},
-    {Keywords::drop_kw,checkDropTable},
-    {Keywords::insert_kw,checkInsertTable},
-    {Keywords::select_kw,checkSelectTable},
-    {Keywords::update_kw,checkUpdateTable},
-    {Keywords::delete_kw,checkDeleteRow},
+    {Keywords::create_kw,CreateTableStatement::checkCreateTable},
+    {Keywords::show_kw,ShowTableStatement::checkShowTable},
+    {Keywords::describe_kw,DescribeTableStatement::checkDescribeTable},
+    {Keywords::drop_kw,DropTableStatement::checkDropTable},
+    {Keywords::insert_kw,InsertTableStatement::checkInsertTable},
+    {Keywords::select_kw, SelectStatement::checkSelectTable},
+    {Keywords::update_kw,UpdateTableStatement::checkUpdateTable},
+    {Keywords::delete_kw,DeleteRowStatement::checkDeleteRow},
 
   };
+
+std::map<Keywords,SQLStmtFactory> theSQLStatementMap{
+    {Keywords::create_kw,CreateTableStatement::createTableStatement},
+    {Keywords::show_kw,ShowTableStatement::showTableStatement},
+    {Keywords::describe_kw,DescribeTableStatement::describeTableStatement},
+
+};
 
 // Function to check if given command is a valid command
 CmdProcessor *SQLProcessor::recognizes(Tokenizer &aTokenizer) {
@@ -294,7 +94,7 @@ CmdProcessor *SQLProcessor::recognizes(Tokenizer &aTokenizer) {
 // To create Statement for CREATE TABLE
 Statement* SQLProcessor::createTableStatement(Tokenizer &aTokenizer){
     CreateTableStatement *theCreateTable = new CreateTableStatement(Keywords::create_kw);
-    theCreateTable->createTableStatement(aTokenizer);
+    theCreateTable->createTableStatement(this,aTokenizer);
     return theCreateTable;
 
 }
