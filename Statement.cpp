@@ -35,6 +35,6 @@ namespace ECE141 {
 
   // USE: Get DB Name
 
-  std::string Statement::getDBName(){return Statement::DBName;}
+  const std::string Statement::getDBName() const {return Statement::DBName;}
   
 }

@@ -75,6 +75,7 @@
 		"utility": "cpp",
 		"numeric": "cpp",
 		"random": "cpp",
-		"queue": "cpp"
+		"queue": "cpp",
+		"regex": "cpp"
 	}
 }

@@ -30,6 +30,7 @@ namespace ECE141 {
     virtual   StatusResult  run(std::ostream &aStream) const;
                             std::string   getDBName();
                             void setDBName(std::string aDBName);
+                            const std::string getDBName() const;
   protected:
     Keywords   stmtType;
     std::string DBName;    

@@ -38,8 +38,11 @@ namespace ECE141 {
     StatusResult  showDatabases(Statement *aStatement);
     StatusResult  useDatabase(Statement *aStatement);
 
-    bool          dbExists(const std::string &aDBName);
+    static bool   dbExists(const std::string &aDBName);
     Database*     getDatabaseInUse();
+    void          setDatabaseInUse(Database* aDb);
+    void          releaseDatabase();
+    bool          checkActiveDBName(const std::string &aDBName);
 
   protected:
   //stuff?

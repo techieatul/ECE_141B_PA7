@@ -11,7 +11,7 @@
 			"request": "launch",
 			"name": "clang++ build active file",
 			"program": "${workspaceFolder}/pa7",
-			"args": ["Select"],
+			"args": ["DBCommands"],
 			"externalConsole": false,
 			"preLaunchTask": "clang++ build active file",
 			"MIMode": "lldb",
