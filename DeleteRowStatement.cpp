@@ -1,19 +1,20 @@
 #pragma once
 #include "DeleteRowStatement.hpp"
 
+#include "Database.hpp"
 #include "Helpers.hpp"
 
 namespace ECE141 {
 
-   StatusResult DeleteRowStatement::parse(Tokenizer &aTokenizer){
-       theDBQuery.setEntity(entity);
-       aTokenizer.next(); // skip where
-       aTokenizer.next();
-       StatusResult theStatus = theDBQuery.getFilter().parse(aTokenizer,*entity);
-       return theStatus;
-    }
+StatusResult DeleteRowStatement::parse(Tokenizer& aTokenizer) {
+    theDBQuery.setEntity(entity);
+    aTokenizer.next();  // skip where
+    aTokenizer.next();
+    StatusResult theStatus = theDBQuery.getFilter().parse(aTokenizer, *entity);
+    return theStatus;
+}
 
-    bool DeleteRowStatement::checkDeleteRow(Tokenizer aTokenizer){
+bool DeleteRowStatement::checkDeleteRow(Tokenizer aTokenizer) {
     // DELETE FROM Users WHERE
     Token theUpdate = aTokenizer.current();
     Token theFrom = aTokenizer.peek(1);
@@ -25,38 +26,36 @@ namespace ECE141 {
     return true;
 }
 
-Statement* DeleteRowStatement::deleteRowStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
+Statement* DeleteRowStatement::deleteRowStatement(SQLProcessor* aProc, Tokenizer& aTokenizer) {
     aTokenizer.skipTo(Keywords::from_kw);
-    aTokenizer.next(); // Table Name
+    aTokenizer.next();  // Table Name
     std::string theTableName = aTokenizer.current().data;
-    Block    theDescribeBlock;
-    Database* theDb = aProc->getDatabaseInUse();
-    uint32_t theBlockNum = theDb->getEntityFromMap(theTableName);
-    if(theBlockNum==-1){
+    Block       theDescribeBlock;
+    Database*   theDb = aProc->getDatabaseInUse();
+    uint32_t    theBlockNum = theDb->getEntityFromMap(theTableName);
+    if (theBlockNum == -1) {
         return nullptr;
     }
     theDb->getStorage().readBlock(theBlockNum, theDescribeBlock);
-    Entity *theEntity;
+    Entity* theEntity;
     if (theDescribeBlock.header.theTitle == theTableName) {
         theEntity = new Entity(theTableName);
         theEntity->decodeBlock(theDescribeBlock);
     }
 
-    DeleteRowStatement *theDeleteStmt = new DeleteRowStatement(aProc,Keywords::delete_kw,theEntity);
-    StatusResult theStatus = theDeleteStmt->parse(aTokenizer);
-    if(!theStatus){
+    DeleteRowStatement* theDeleteStmt = new DeleteRowStatement(aProc, Keywords::delete_kw, theEntity);
+    StatusResult        theStatus = theDeleteStmt->parse(aTokenizer);
+    if (!theStatus) {
         return nullptr;
     }
     delete theEntity;
     return theDeleteStmt;
 }
 
-StatusResult DeleteRowStatement::run(std::ostream& aStream){
+StatusResult DeleteRowStatement::run(std::ostream& aStream) {
     SQLProcessor* theSQLProcessorPtr = this->getSQLProcessor();
-    Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-    return theDatabase->deleteRow(this,aStream);
+    Database*     theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+    return theDatabase->deleteRow(this, aStream);
 }
-
-
 
 }  // namespace ECE141

@@ -1,11 +1,12 @@
 #pragma once
 #include "SelectStatement.hpp"
 
+#include "Database.hpp"
 #include "Filters.hpp"
 #include "Helpers.hpp"
 
 namespace ECE141 {
-SelectStatement::SelectStatement(SQLProcessor* aProc,Keywords aStatementType, Entity *anEntity) : SQLStatement::SQLStatement(aStatementType), entity(anEntity),theSQLProcessorPtr(aProc) {}
+SelectStatement::SelectStatement(SQLProcessor *aProc, Keywords aStatementType, Entity *anEntity) : SQLStatement::SQLStatement(aStatementType), entity(anEntity), theSQLProcessorPtr(aProc) {}
 
 StatusResult SelectStatement::parseOperand(Tokenizer &aTokenizer, Operand &anOperand) {
     StatusResult theResult{noError};
@@ -48,12 +49,11 @@ StatusResult SelectStatement::parseStatement(Tokenizer &aTokenizer) {
     aTokenizer.next();  // TableName
     this->theDBQuery.setEntityName(aTokenizer.current().data);
     aTokenizer.next();
-    //Filters thefilters;
+    // Filters thefilters;
     while (aTokenizer.more() && aTokenizer.current().data != ";") {
         switch (aTokenizer.current().keyword) {
             case Keywords::where_kw:
                 this->theDBQuery.setFilterKey(Keywords::where_kw);
-                
 
                 // Skip where
                 aTokenizer.next();
@@ -112,11 +112,11 @@ StatusResult SelectStatement::parseSelect(Tokenizer &aTokenizer) {
 
 // Function to check if tokenized tokens represent SELECT...;
 bool SelectStatement::checkSelectTable(Tokenizer aTokenizer) {
-    Token theSelectToken{TokenType::keyword, Keywords::select_kw,
+    Token              theSelectToken{TokenType::keyword, Keywords::select_kw,
                          Operators::unknown_op, "select"};
-    Token theFromToken{TokenType::keyword, Keywords::from_kw,
+    Token              theFromToken{TokenType::keyword, Keywords::from_kw,
                        Operators::unknown_op, "from"};
-    Token theTableToken{TokenType::identifier, Keywords::unknown_kw,
+    Token              theTableToken{TokenType::identifier, Keywords::unknown_kw,
                         Operators::unknown_op, "table_name"};
 
     std::vector<Token> SQLVector;
@@ -159,12 +159,12 @@ bool SelectStatement::checkSelectTable(Tokenizer aTokenizer) {
     return true;
 }
 
-Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
+Statement *selectStatement(SQLProcessor *aProc, Tokenizer &aTokenizer) {
     aTokenizer.skipTo(Keywords::from_kw);
     aTokenizer.next();
-    Block    theDescribeBlock;
-    Database* theDb = aProc->getDatabaseInUse();
-    uint32_t theBlockNum = theDb->getEntityFromMap(aTokenizer.current().data);
+    Block     theDescribeBlock;
+    Database *theDb = aProc->getDatabaseInUse();
+    uint32_t  theBlockNum = theDb->getEntityFromMap(aTokenizer.current().data);
     theDb->getStorage().readBlock(theBlockNum, theDescribeBlock);
     Entity *theEntity;
 
@@ -172,7 +172,7 @@ Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
         theEntity = new Entity(aTokenizer.current().data);
         theEntity->decodeBlock(theDescribeBlock);
     }
-    SelectStatement *theSelectStatememt = new SelectStatement(aProc,Keywords::select_kw, theEntity);
+    SelectStatement *theSelectStatememt = new SelectStatement(aProc, Keywords::select_kw, theEntity);
     // Restart the token Index
     aTokenizer.restart();
     StatusResult theStatus = theSelectStatememt->parse(aTokenizer);
@@ -180,18 +180,14 @@ Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
     return theSelectStatememt;
 }
 
-
-StatusResult SelectStatement::parse(Tokenizer &aTokenizer){
+StatusResult SelectStatement::parse(Tokenizer &aTokenizer) {
     parseStatement(aTokenizer);
 }
 
- StatusResult SelectStatement::run(std::ostream &aStream){
-     SQLProcessor* theSQLProcessorPtr = this->getSQLProcessor();
-     Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-     return theDatabase->showQuery(this,aStream);
+StatusResult SelectStatement::run(std::ostream &aStream) {
+    SQLProcessor *theSQLProcessorPtr = this->getSQLProcessor();
+    Database     *theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+    return theDatabase->showQuery(this, aStream);
 }
 
-
-} // namespace ECE141
-
-
+}  // namespace ECE141

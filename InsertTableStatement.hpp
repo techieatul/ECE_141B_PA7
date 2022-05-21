@@ -4,15 +4,16 @@
 
 #include "Attribute.hpp"
 #include "BlockIO.hpp"
-#include "Database.hpp"
+//#include "Database.hpp"
 #include "Entity.hpp"
 #include "Row.hpp"
-#include "SQLProcessor.hpp"
+
+//#include "SQLProcessor.hpp"
 #include "SQLStatement.hpp"
 #include "Statement.hpp"
-#include "SQLProcessor.hpp"
 
 namespace ECE141 {
+class SQLProcessor;
 using RowVectors = std::vector<Row>;
 class InsertTableStatement : public SQLStatement {
    public:
