@@ -159,7 +159,7 @@ bool SelectStatement::checkSelectTable(Tokenizer aTokenizer) {
     return true;
 }
 
-Statement *selectStatement(SQLProcessor *aProc, Tokenizer &aTokenizer) {
+Statement* SelectStatement::selectStatement(SQLProcessor *aProc, Tokenizer &aTokenizer) {
     aTokenizer.skipTo(Keywords::from_kw);
     aTokenizer.next();
     Block     theDescribeBlock;

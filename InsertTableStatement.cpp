@@ -126,7 +126,7 @@ bool InsertTableStatement::checkInsertTable(Tokenizer aTokenizer) {
     return true;
 }
 // Function to check if tokenized tokens represent SELECT...;
-static Statement *insertTableStatement(SQLProcessor *aProc, Tokenizer &aTokenizer) {
+ Statement*  InsertTableStatement::insertTableStatement(SQLProcessor *aProc, Tokenizer &aTokenizer) {
     aTokenizer.skipTo(TokenType::identifier);
     Block     theDescribeBlock;
     Database *theCurrentActiveDb = aProc->getDatabaseInUse();
