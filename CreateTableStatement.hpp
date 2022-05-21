@@ -6,6 +6,7 @@
 #include "Statement.hpp"
 #include "SQLProcessor.hpp"
 namespace ECE141 {
+class SQLProcessor;
 class CreateTableStatement : public SQLStatement {
    public:
     CreateTableStatement(SQLProcessor* aSQLProc,Keywords aStatementType = Keywords::unknown_kw) : SQLStatement::SQLStatement(aStatementType),theSQLProcessorPtr(aSQLProc) {}

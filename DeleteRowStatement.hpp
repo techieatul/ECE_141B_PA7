@@ -10,6 +10,7 @@
 #include "Statement.hpp"
 
 namespace ECE141 {
+class SQLProcessor;
 class DeleteRowStatement : public SQLStatement {
    public:
     DeleteRowStatement(SQLProcessor* aProc,Keywords aStatementType,Entity *anEntity)
