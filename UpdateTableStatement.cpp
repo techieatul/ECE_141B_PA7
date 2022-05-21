@@ -109,13 +109,19 @@ namespace ECE141 {
             theEntity->decodeBlock(theDescribeBlock);
         }
         aTokenizer.restart();
-        UpdateTableStatement *theUpdateStmt = new UpdateTableStatement(Keywords::update_kw, theEntity);
+        UpdateTableStatement *theUpdateStmt = new UpdateTableStatement(aProc,Keywords::update_kw, theEntity);
         StatusResult theStatus = theUpdateStmt->parse(aTokenizer);
         if (!theStatus) {
             return nullptr;
         }
         delete theEntity;
         return theUpdateStmt;
+    }
+
+    StatusResult UpdateTableStatement::run(std::ostream &aStream){
+        SQLProcessor* theSQLProcessorPtr = this->getSQLProcessor();
+        Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+        return theDatabase->updateTable(this,aStream);
     }
 
 }  // namespace ECE141

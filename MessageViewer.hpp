@@ -49,22 +49,6 @@ class MessageViewer : public View {
                  << "\n";
     }
 
-    void printDumbedDb(std::ostream &anOutput, Database *theCurrentActiveDbPtr) {
-        anOutput << "+----------------+--------+---------------+\n";
-        anOutput << "| Type           | Id     | Extra         |\n";
-        anOutput << "+----------------+--------+---------------+\n";
-        anOutput << "| Meta           | 0      |               |\n";
-        anOutput << "-----------------+--------+---------------+\n";
-
-        // std::vector<std::string> theDumbHeaderVec;
-        // theDumbHeaderVec.push_back(" Type           ");
-        // theDumbHeaderVec.push_back(" Id     ");
-        // theDumbHeaderVec.push_back(" Extra         ");
-        // theCurrentActiveDbPtr->dump(anOutput);
-
-        // anOutput << "+" << std::string("" - 2, '-') << "+"
-        //          << "\n";
-    }
 
     void printAttrTable(std::ostream &anOutput,std::vector<Attribute> anAttr){
 

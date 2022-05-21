@@ -5,7 +5,7 @@
 #include "Helpers.hpp"
 
 namespace ECE141 {
-SelectStatement::SelectStatement(Keywords aStatementType, Entity *anEntity) : SQLStatement::SQLStatement(aStatementType), entity(anEntity) {}
+SelectStatement::SelectStatement(SQLProcessor* aProc,Keywords aStatementType, Entity *anEntity) : SQLStatement::SQLStatement(aStatementType), entity(anEntity),theSQLProcessorPtr(aProc) {}
 
 StatusResult SelectStatement::parseOperand(Tokenizer &aTokenizer, Operand &anOperand) {
     StatusResult theResult{noError};
@@ -172,7 +172,7 @@ Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
         theEntity = new Entity(aTokenizer.current().data);
         theEntity->decodeBlock(theDescribeBlock);
     }
-    SelectStatement *theSelectStatememt = new SelectStatement(Keywords::select_kw, theEntity);
+    SelectStatement *theSelectStatememt = new SelectStatement(aProc,Keywords::select_kw, theEntity);
     // Restart the token Index
     aTokenizer.restart();
     StatusResult theStatus = theSelectStatememt->parse(aTokenizer);
@@ -183,6 +183,12 @@ Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer){
 
 StatusResult SelectStatement::parse(Tokenizer &aTokenizer){
     parseStatement(aTokenizer);
+}
+
+ StatusResult SelectStatement::run(std::ostream &aStream){
+     SQLProcessor* theSQLProcessorPtr = this->getSQLProcessor();
+     Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+     return theDatabase->showQuery(this,aStream);
 }
 
 

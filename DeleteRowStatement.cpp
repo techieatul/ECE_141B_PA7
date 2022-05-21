@@ -42,7 +42,7 @@ Statement* DeleteRowStatement::deleteRowStatement(SQLProcessor* aProc ,Tokenizer
         theEntity->decodeBlock(theDescribeBlock);
     }
 
-    DeleteRowStatement *theDeleteStmt = new DeleteRowStatement(Keywords::delete_kw,theEntity);
+    DeleteRowStatement *theDeleteStmt = new DeleteRowStatement(aProc,Keywords::delete_kw,theEntity);
     StatusResult theStatus = theDeleteStmt->parse(aTokenizer);
     if(!theStatus){
         return nullptr;
@@ -50,5 +50,13 @@ Statement* DeleteRowStatement::deleteRowStatement(SQLProcessor* aProc ,Tokenizer
     delete theEntity;
     return theDeleteStmt;
 }
+
+StatusResult DeleteRowStatement::run(std::ostream& aStream){
+    SQLProcessor* theSQLProcessorPtr = this->getSQLProcessor();
+    Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
+    return theDatabase->deleteRow(this,aStream);
+}
+
+
 
 }  // namespace ECE141

@@ -145,9 +145,9 @@ StatusResult Database::updateTable(UpdateTableStatement *aSqlStmt, std::ostream 
     return StatusResult(Errors::noError);
 }
 StatusResult Database::deleteRow(DeleteRowStatement *aSqlStmt, std::ostream &anOutput) {
-    DBQuery         &theDBQuery = aSqlStmt->getDBQuery();
-    Entity          *theEntity = theDBQuery.getEntity();
-    uint32_t         theEntityHash = theEntity->getEntityHashString();
+    DBQuery &theDBQuery = aSqlStmt->getDBQuery();
+    Entity  *theEntity = theDBQuery.getEntity();
+    uint32_t theEntityHash = theEntity->getEntityHashString();
     RawRowCollection theRows;
     each(theEntityHash, theRows);
     RawRowCollection theFilteredRows;
@@ -350,7 +350,7 @@ StatusResult Database::insertTable(InsertTableStatement *aStmt, std::ostream &an
     this->getStorage().writeBlock(theBlockNum, theEntityBlock);
 
     delete theEntity;
-    output << "Query Ok, " << theRowData.size() << " rows affected (" << Config::getTimer().elapsed() << " secs)" << std::endl;
+    anOutput << "Query Ok, " << theRowData.size() << " rows affected (" << Config::getTimer().elapsed() << " secs)" << std::endl;
     return StatusResult(Errors::noError);
 }
 StatusResult Database::showTable(ShowTableStatement *aStmt, std::ostream &anOutput) {
@@ -422,6 +422,14 @@ StatusResult Database::dropTable(DropTableStatement *aStmt, std::ostream &anOutp
     }
 
     return theStatus;
+}
+
+StatusResult Database::showQuery(SelectStatement* aStmt,std::ostream &anOutput){
+    DBQuery theDBQuery = aStmt->getDBQuery();
+    Entity *theEntity = new Entity(theDBQuery.getEntityName());
+    this->selectRows(theDBQuery, *theEntity, anOutput);
+    delete theEntity;
+    return StatusResult(Errors::noError);
 }
 
 }  // namespace ECE141

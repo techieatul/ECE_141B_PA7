@@ -12,18 +12,20 @@
 namespace ECE141 {
 class DeleteRowStatement : public SQLStatement {
    public:
-    DeleteRowStatement(Keywords aStatementType,Entity *anEntity)
-        : SQLStatement::SQLStatement(aStatementType),entity(anEntity){}
+    DeleteRowStatement(SQLProcessor* aProc,Keywords aStatementType,Entity *anEntity)
+        : SQLStatement::SQLStatement(aStatementType),entity(anEntity),theSQLProcessorPtr(aProc){}
     ~DeleteRowStatement(){};
 
     StatusResult parse(Tokenizer &aTokenizer) override;
     static bool checkDeleteRow(Tokenizer aTokenizer);
     static Statement* deleteRowStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer);
-    
+    StatusResult run(std::ostream &aStream);
+    SQLProcessor* getSQLProcessor(){return theSQLProcessorPtr;}
    
    protected:
     
     Entity     *entity;
+    SQLProcessor* theSQLProcessorPtr;
 };
 
 }  // namespace ECE141

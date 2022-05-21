@@ -19,7 +19,7 @@ struct selectField {
 };
 class SelectStatement : public SQLStatement {
    public:
-    SelectStatement(Keywords aStatementType, Entity *anEntity);
+    SelectStatement(SQLProcessor* aProc,Keywords aStatementType, Entity *anEntity);
     ~SelectStatement(){};
     StatusResult parseStatement(Tokenizer &aTokenizer);
     StatusResult parseSelect(Tokenizer &aTokenizer);
@@ -27,9 +27,13 @@ class SelectStatement : public SQLStatement {
     static bool checkSelectTable(Tokenizer aTokenizer);
     static Statement* selectStatement(SQLProcessor* aProc ,Tokenizer &aTokenizer);
     StatusResult parse(Tokenizer &aTokenizer);
+    SQLProcessor* getSQLProcessor(){return theSQLProcessorPtr;}
+    StatusResult run(std::ostream &aStream);
 
    protected:
     Entity *entity;
+   
+    SQLProcessor* theSQLProcessorPtr;
 };
 
 }  // namespace ECE141

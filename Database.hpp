@@ -26,10 +26,13 @@
 #include "InsertTableStatement.hpp"
 #include "DescribeTableStatement.hpp"
 #include "DropTableStatement.hpp"
+#include "SelectStatement.hpp"
 
 namespace ECE141 {
+class CreateTableStatement;
 
 class Database {
+
    public:
     Database(const std::string aName, CreateDB);
     Database(const std::string aName, OpenDB);
@@ -63,6 +66,7 @@ class Database {
     StatusResult describeTable(DescribeTableStatement* aStmt,std::ostream &anOutput);
     StatusResult insertTable(InsertTableStatement* aStmt,std::ostream &anOutput);
     StatusResult dropTable(DropTableStatement* aStmt,std::ostream &anOutput);
+    StatusResult showQuery(SelectStatement* aStmt,std::ostream &anOutput);
     
    protected:
     std::string name;

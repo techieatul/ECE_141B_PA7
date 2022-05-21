@@ -10,6 +10,7 @@
 #include "SQLProcessor.hpp"
 #include "SQLStatement.hpp"
 #include "Statement.hpp"
+#include "SQLProcessor.hpp"
 
 namespace ECE141 {
 using RowVectors = std::vector<Row>;
