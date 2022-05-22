@@ -181,7 +181,7 @@ Statement* SelectStatement::selectStatement(SQLProcessor *aProc, Tokenizer &aTok
 }
 
 StatusResult SelectStatement::parse(Tokenizer &aTokenizer) {
-    parseStatement(aTokenizer);
+    return parseStatement(aTokenizer);
 }
 
 StatusResult SelectStatement::run(std::ostream &aStream) const {

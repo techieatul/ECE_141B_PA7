@@ -149,6 +149,6 @@ bool InsertTableStatement::checkInsertTable(Tokenizer aTokenizer) {
 StatusResult InsertTableStatement::run(std::ostream &aStream) const {
     Database *theDatabase = theSQLProcessorPtr->getDatabaseInUse();
     InsertTableStatement *theInsertTableStmt = const_cast<InsertTableStatement*>(this);
-    theDatabase->insertTable(theInsertTableStmt, aStream);
+    return theDatabase->insertTable(theInsertTableStmt, aStream);
 };
 }  // namespace ECE141

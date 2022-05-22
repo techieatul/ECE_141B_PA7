@@ -84,6 +84,7 @@ std::map<Keywords,SQLStmtFactory> theSQLStatementMap{
     {Keywords::select_kw,SelectStatement::selectStatement},
     {Keywords::update_kw,UpdateTableStatement::updateTableStatement},
     {Keywords::delete_kw,DeleteRowStatement::deleteRowStatement},
+    {Keywords::drop_kw,DropTableStatement::dropTableStatement},
 
 };
 

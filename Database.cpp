@@ -422,7 +422,7 @@ StatusResult Database::dropTable(DropTableStatement *aStmt, std::ostream &anOutp
 }
 
 StatusResult Database::showQuery(SelectStatement* aStmt,std::ostream &anOutput){
-    DBQuery theDBQuery = aStmt->getDBQuery();
+    DBQuery& theDBQuery = aStmt->getDBQuery();
     Entity *theEntity = new Entity(theDBQuery.getEntityName());
     this->selectRows(theDBQuery, *theEntity, anOutput);
     delete theEntity;

@@ -48,7 +48,7 @@ StatusResult DropTableStatement::run(std::ostream& aStream) const {
     SQLProcessor* theSQLProcessorPtr = getSQLProcessor();
     Database*     theDatabase = theSQLProcessorPtr->getDatabaseInUse();
     DropTableStatement* theDropTableStatement = const_cast<DropTableStatement*>(this);
-    theDatabase->dropTable(theDropTableStatement, aStream);
+    return theDatabase->dropTable(theDropTableStatement, aStream);
 }
 
 };  // namespace ECE141

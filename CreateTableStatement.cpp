@@ -125,7 +125,7 @@ namespace ECE141 {
             return StatusResult(Errors::unknownDatabase);
         }
         CreateTableStatement* theCreateTableStatement = const_cast<CreateTableStatement*>(this);
-        theDatabase->createTable(theCreateTableStatement,aStream);
+        return theDatabase->createTable(theCreateTableStatement,aStream);
 
     }
 

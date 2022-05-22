@@ -786,6 +786,7 @@ namespace ECE141 {
 
       theStream1 << getUserSelect({});//basic
       theStream1 << getUserSelect({" order by zipcode"," where zipcode>92122"," limit 3"});
+      theStream1 << "select * from Users where age in (70,48) \n";
       theStream1 << "select first_name, last_name from Users order by last_name where age>40;\n";
 
       theStream1 << "show tables;\n";
