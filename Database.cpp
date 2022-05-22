@@ -236,9 +236,6 @@ void Database::each(uint32_t &anEntityHash, RawRowCollection &theRows) {
 }
 
 StatusResult Database::createTable(CreateTableStatement *aStmt, std::ostream &anOutput) {
-    if (this == nullptr) {
-        return StatusResult(Errors::noDatabaseSpecified);
-    }
     CreateTableStatement *theStatement = aStmt;
     std::string           theTableName = theStatement->getTableName();
     Entity               *theEntity = new Entity(theStatement->getTableName());

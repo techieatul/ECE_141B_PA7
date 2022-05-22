@@ -33,10 +33,11 @@ Statement* DescribeTableStatement::describeTableStatement(SQLProcessor* aProc, T
     return theDescribeTable;
 }
 
-StatusResult DescribeTableStatement::run(std::ostream& aStream) {
+StatusResult DescribeTableStatement::run(std::ostream& aStream) const {
     SQLProcessor* theSQLProcessorPtr = getSQLProcessor();
     Database*     theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-    return theDatabase->describeTable(this, aStream);
+    DescribeTableStatement* theDescribeTableStmt = const_cast<DescribeTableStatement*>(this);
+    return theDatabase->describeTable(theDescribeTableStmt, aStream);
 }
 
 }  // namespace ECE141

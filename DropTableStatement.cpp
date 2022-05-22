@@ -44,10 +44,11 @@ StatusResult DropTableStatement::parse(Tokenizer& aTokenizer) {
     return StatusResult(Errors::noError);
 }
 
-StatusResult DropTableStatement::run(std::ostream& aStream) {
+StatusResult DropTableStatement::run(std::ostream& aStream) const {
     SQLProcessor* theSQLProcessorPtr = getSQLProcessor();
     Database*     theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-    theDatabase->dropTable(this, aStream);
+    DropTableStatement* theDropTableStatement = const_cast<DropTableStatement*>(this);
+    theDatabase->dropTable(theDropTableStatement, aStream);
 }
 
 };  // namespace ECE141

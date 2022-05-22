@@ -146,8 +146,9 @@ bool InsertTableStatement::checkInsertTable(Tokenizer aTokenizer) {
     delete theEntity;
     return theInsertTable;
 }
-StatusResult InsertTableStatement::run(std::ostream &aStream) {
+StatusResult InsertTableStatement::run(std::ostream &aStream) const {
     Database *theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-    theDatabase->insertTable(this, aStream);
+    InsertTableStatement *theInsertTableStmt = const_cast<InsertTableStatement*>(this);
+    theDatabase->insertTable(theInsertTableStmt, aStream);
 };
 }  // namespace ECE141

@@ -184,10 +184,11 @@ StatusResult SelectStatement::parse(Tokenizer &aTokenizer) {
     parseStatement(aTokenizer);
 }
 
-StatusResult SelectStatement::run(std::ostream &aStream) {
+StatusResult SelectStatement::run(std::ostream &aStream) const {
     SQLProcessor *theSQLProcessorPtr = this->getSQLProcessor();
     Database     *theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-    return theDatabase->showQuery(this, aStream);
+    SelectStatement* theSelectStatememt = const_cast<SelectStatement*>(this);
+    return theDatabase->showQuery(theSelectStatememt, aStream);
 }
 
 }  // namespace ECE141

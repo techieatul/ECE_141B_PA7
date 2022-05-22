@@ -14,7 +14,7 @@ namespace ECE141{
         ShowTableStatement(SQLProcessor* aSQLProc,Keywords aStatementType=Keywords::unknown_kw):SQLStatement::SQLStatement(aStatementType),theSQLProcessorPtr(aSQLProc){}
         ~ShowTableStatement(){};
 
-        SQLProcessor* getSQLProcessor(){return theSQLProcessorPtr;}
+        SQLProcessor* getSQLProcessor() const {return theSQLProcessorPtr;}
 
 
         // Function to check if tokenized tokens represent SHOW TABLES;
@@ -22,7 +22,7 @@ namespace ECE141{
 
         static Statement* showTableStatement(SQLProcessor* aProc, Tokenizer &aTokenizer);
 
-        StatusResult run(std::ostream &aStream);
+        StatusResult run(std::ostream &aStream) const override;
     };
 
 }

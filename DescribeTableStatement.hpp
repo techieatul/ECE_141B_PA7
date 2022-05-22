@@ -18,9 +18,9 @@ class DescribeTableStatement : public SQLStatement {
     static bool       checkDescribeTable(Tokenizer aTokenizer);
 
     static Statement* describeTableStatement(SQLProcessor* aProc, Tokenizer& aTokenizer);
-    SQLProcessor*     getSQLProcessor() { return theSQLProcessorPtr; }
+    SQLProcessor*     getSQLProcessor() const { return theSQLProcessorPtr; }
 
-    StatusResult      run(std::ostream& aStream);
+    StatusResult      run(std::ostream& aStream) const override;
 
    protected:
     SQLProcessor* theSQLProcessorPtr;

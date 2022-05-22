@@ -19,10 +19,10 @@ class DropTableStatement : public SQLStatement {
 
     static Statement* dropTableStatement(SQLProcessor* aProc, Tokenizer& aTokenizer);
 
-    SQLProcessor*     getSQLProcessor() { return theSQLProcessorPtr; }
-    StatusResult      parse(Tokenizer& aTokenizer);
+    SQLProcessor*     getSQLProcessor() const { return theSQLProcessorPtr; }
+    StatusResult      parse(Tokenizer& aTokenizer) override;
 
-    StatusResult      run(std::ostream& aStream);
+    StatusResult      run(std::ostream& aStream) const override;
 
    protected:
     SQLProcessor* theSQLProcessorPtr;

@@ -32,9 +32,10 @@ namespace ECE141{
         return theShowTable;
     }
 
-    StatusResult ShowTableStatement::run(std::ostream &aStream){
+    StatusResult ShowTableStatement::run(std::ostream &aStream) const{
         SQLProcessor* theSQLProcessorPtr = getSQLProcessor();
         Database* theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-        return theDatabase->showTable(this, aStream);
+        ShowTableStatement* theShowTableStmt = const_cast<ShowTableStatement*>(this);
+        return theDatabase->showTable(theShowTableStmt, aStream);
     }
 };

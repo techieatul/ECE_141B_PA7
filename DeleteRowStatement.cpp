@@ -52,10 +52,11 @@ Statement* DeleteRowStatement::deleteRowStatement(SQLProcessor* aProc, Tokenizer
     return theDeleteStmt;
 }
 
-StatusResult DeleteRowStatement::run(std::ostream& aStream) {
+StatusResult DeleteRowStatement::run(std::ostream& aStream) const{
     SQLProcessor* theSQLProcessorPtr = this->getSQLProcessor();
     Database*     theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-    return theDatabase->deleteRow(this, aStream);
+    DeleteRowStatement* theDeleteStmt = const_cast<DeleteRowStatement*>(this);
+    return theDatabase->deleteRow(theDeleteStmt, aStream);
 }
 
 }  // namespace ECE141

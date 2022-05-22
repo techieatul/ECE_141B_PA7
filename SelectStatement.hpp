@@ -26,9 +26,9 @@ class SelectStatement : public SQLStatement {
     StatusResult      parseOperand(Tokenizer &aTokenizer, Operand &anOperand);
     static bool       checkSelectTable(Tokenizer aTokenizer);
     static Statement *selectStatement(SQLProcessor *aProc, Tokenizer &aTokenizer);
-    StatusResult      parse(Tokenizer &aTokenizer);
-    SQLProcessor     *getSQLProcessor() { return theSQLProcessorPtr; }
-    StatusResult      run(std::ostream &aStream);
+    StatusResult      parse(Tokenizer &aTokenizer) override;
+    SQLProcessor     *getSQLProcessor() const { return theSQLProcessorPtr; }
+    StatusResult      run(std::ostream &aStream) const override;
 
    protected:
     Entity       *entity;

@@ -28,8 +28,8 @@ class InsertTableStatement : public SQLStatement {
                                              StringList &aFields);
     static bool       checkInsertTable(Tokenizer aTokenizer);
     static Statement *insertTableStatement(SQLProcessor *aProc, Tokenizer &aTokenizer);
-    StatusResult      run(std::ostream &aStream);
-    SQLProcessor     *getSQLProcessor() { return theSQLProcessorPtr; }
+    StatusResult      run(std::ostream &aStream) const override;
+    SQLProcessor     *getSQLProcessor() const { return theSQLProcessorPtr; }
 
    protected:
     RowVectors   *rows;

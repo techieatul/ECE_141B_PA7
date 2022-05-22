@@ -21,8 +21,8 @@ class UpdateTableStatement : public SQLStatement {
     StatusResult      parseSet(Tokenizer &aTokenizer);
     static bool       checkUpdateTable(Tokenizer aTokenizer);
     static Statement *updateTableStatement(SQLProcessor *aProc, Tokenizer &aTokenizer);
-    StatusResult      run(std::ostream &aStream);
-    SQLProcessor     *getSQLProcessor() { return theSQLProcessorPtr; }
+    StatusResult      run(std::ostream &aStream) const override;
+    SQLProcessor     *getSQLProcessor() const { return theSQLProcessorPtr; }
 
    protected:
     Entity       *entity;

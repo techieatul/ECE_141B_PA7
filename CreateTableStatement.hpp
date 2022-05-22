@@ -14,9 +14,10 @@ class CreateTableStatement : public SQLStatement {
     // Function to check if tokenized tokens represent CREATE TABLE <TABLE_NAME>;
     static bool checkCreateTable(Tokenizer aTokenizer);
     static Statement* createTableStatement(SQLProcessor* aProc, Tokenizer& aTokenizer);
-    StatusResult run(std::ostream &aStream);
+    StatusResult run(std::ostream &aStream) const override;
+    StatusResult parse(Tokenizer& aTokenizer) override;
 
-    SQLProcessor* getSQLProcessor();
+    SQLProcessor* getSQLProcessor() const;
 
     protected:
     SQLProcessor* theSQLProcessorPtr;

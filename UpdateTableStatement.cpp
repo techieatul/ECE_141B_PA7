@@ -116,10 +116,11 @@ Statement* UpdateTableStatement::updateTableStatement(SQLProcessor* aProc, Token
     return theUpdateStmt;
 }
 
-StatusResult UpdateTableStatement::run(std::ostream& aStream) {
+StatusResult UpdateTableStatement::run(std::ostream& aStream) const {
     SQLProcessor* theSQLProcessorPtr = this->getSQLProcessor();
     Database*     theDatabase = theSQLProcessorPtr->getDatabaseInUse();
-    return theDatabase->updateTable(this, aStream);
+    UpdateTableStatement* theUpdateStmt = const_cast<UpdateTableStatement*>(this);
+    return theDatabase->updateTable(theUpdateStmt, aStream);
 }
 
 }  // namespace ECE141

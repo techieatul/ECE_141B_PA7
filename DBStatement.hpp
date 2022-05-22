@@ -25,8 +25,8 @@ namespace ECE141 {
         ~CreateDBStatement(){};
         static bool checkCreateDB(Tokenizer aTokenizer);
         static Statement* createDBStatement(DBProcessor *aProc,Tokenizer &aTokenizer);
-        const char* getStatementName() const {return "createdbstatement";}
-        StatusResult  run(std::ostream &aStream) const;
+        const char* getStatementName() const override {return "createdbstatement";}
+        StatusResult  run(std::ostream &aStream) const override;
 
 
     };
@@ -37,8 +37,8 @@ namespace ECE141 {
         ~ShowDBStatement(){}
         static bool checkShowDB(Tokenizer aTokenizer);
         static Statement* showDBStatement(DBProcessor *aProc,Tokenizer &aTokenizer);
-        const char* getStatementName() const {return "showdbstatement";}
-        StatusResult  run(std::ostream &aStream) const;
+        const char* getStatementName() const override {return "showdbstatement";}
+        StatusResult  run(std::ostream &aStream) const override;
 
     };
 
@@ -48,8 +48,8 @@ namespace ECE141 {
         ~DropDBStatement(){}
         static bool checkDropDB(Tokenizer aTokenizer);
         static Statement* dropDBStatement(DBProcessor *aProc,Tokenizer &aTokenizer);
-        const char* getStatementName() const {return "dropdbstatement";}
-        StatusResult  run(std::ostream &aStream) const;
+        const char* getStatementName() const override {return "dropdbstatement";}
+        StatusResult  run(std::ostream &aStream) const override;
 
     };
 
@@ -59,8 +59,8 @@ namespace ECE141 {
         ~DumpDBStatement(){}
         static bool checkDumpDB(Tokenizer aTokenizer);
         static Statement* dumpDBStatement(DBProcessor *aProc,Tokenizer &aTokenizer);
-        const char* getStatementName() const {return "dumpdbstatement";}
-        StatusResult  run(std::ostream &aStream) const;
+        const char* getStatementName() const override {return "dumpdbstatement";}
+        StatusResult  run(std::ostream &aStream) const override;
 
     };
 
@@ -70,8 +70,8 @@ namespace ECE141 {
         ~UseDBStatement(){}
         static bool checkUseDB(Tokenizer aTokenizer);
         static Statement* useDBStatement(DBProcessor *aProc,Tokenizer &aTokenizer);
-        const char* getStatementName() const {return "usedbstatement";}
-        StatusResult  run(std::ostream &aStream) const;
+        const char* getStatementName() const override {return "usedbstatement";}
+        StatusResult  run(std::ostream &aStream) const override;
 
     };
 }
